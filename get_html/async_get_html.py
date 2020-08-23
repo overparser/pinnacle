@@ -4,14 +4,18 @@ from aiohttp import ClientTimeout
 from aiohttp import BasicAuth
 import json
 import time
-
+from document import document
 
 async def fetch(url, referer, session):
-    timeout = ClientTimeout(total=200)
-
-    async with session.get(url, timeout=timeout, proxy=proxy, proxy_auth=proxy_auth, headers=useragent(referer)) as response:
-        response = json.loads(await response.read())
-        return response
+    proxy_auth = BasicAuth('tuthixen-dest', '53d8tl329rrx')
+    proxy = "http://tuthixen-dest:53d8tl329rrx@45.137.40.144:80"
+    try:
+        timeout = ClientTimeout(total=30, connect=15, sock_connect=15, sock_read=15)
+        async with session.get(url, timeout=timeout, proxy=proxy, proxy_auth=proxy_auth, headers=useragent(referer)) as response:
+            response = json.loads(await response.read())
+            return response
+    except:
+        return []
 
 
 async def run(urls):
@@ -27,8 +31,9 @@ async def run(urls):
 
 
 def get_htmls(urls):
+    urls = urls if isinstance(urls, list) else [urls]
     result = []
-    step = 20
+    step = 10
     print(f'ссылок: {len(urls)}')
     while urls:
         step_urls = urls[:step]
@@ -40,23 +45,16 @@ def get_htmls(urls):
 
     return result
 
-
-proxy_auth = BasicAuth('tuthixen-dest', '53d8tl329rrx')
-
+session_token = document.read_document('text_files/token.txt')
+print(session_token, 'token')
 def useragent(referer):
+    referer = referer.replace('e-s', 'es')
     return {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
         'accept': 'application/json',
         'accept-language': 'en-US;q=0.8,en;q=0.7',
         'content-type': 'application/json', 'origin': 'https://www.pinnacle.com', 'referer': f'{referer}',
         'sec-fetch-dest': 'empty', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-site',
         'x-api-key': 'CmX2KcMrXuFmNg6YFbmTxE0y9CIrOi0R',
-        'x-device-uuid': '09c6ce18-862b2b94-6ffb6791-798ca959'}
-
-with open('../get_html/proxies.txt', 'r') as file:
-    proxies = file.read().split('\n')
-
-
-proxy = "http://tuthixen-dest:53d8tl329rrx@23.236.187.108:80"
-
-# document.write_lines('test2ip.html', get_htmls(['https://2ip.ru/','https://2ip.ru/','https://2ip.ru/','https://2ip.ru/','https://2ip.ru/',]), 'w')
+        'x-device-uuid': 'f908df91-3a2e2367-33f7c582-961e96a5',
+        'x-session': session_token}

@@ -1,0 +1,13 @@
+README.md
+setup.cfg
+setup.py
+flake8_annotations_complexity/__init__.py
+flake8_annotations_complexity/ast_helpres.py
+flake8_annotations_complexity/checker.py
+flake8_annotations_complexity.egg-info/PKG-INFO
+flake8_annotations_complexity.egg-info/SOURCES.txt
+flake8_annotations_complexity.egg-info/dependency_links.txt
+flake8_annotations_complexity.egg-info/entry_points.txt
+flake8_annotations_complexity.egg-info/not-zip-safe
+flake8_annotations_complexity.egg-info/requires.txt
+flake8_annotations_complexity.egg-info/top_level.txt
