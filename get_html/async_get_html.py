@@ -5,13 +5,16 @@ from aiohttp import BasicAuth
 import json
 import time
 from document import document
+from Session.Token import Token
+
+
 
 async def fetch(url, referer, session):
     proxy_auth = BasicAuth('tuthixen-dest', '53d8tl329rrx')
-    proxy = "http://tuthixen-dest:53d8tl329rrx@45.137.40.144:80"
+    proxy = f"http://{user_headers[-2]}"
     try:
         timeout = ClientTimeout(total=30, connect=15, sock_connect=15, sock_read=15)
-        async with session.get(url, timeout=timeout, proxy=proxy, proxy_auth=proxy_auth, headers=useragent(referer)) as response:
+        async with session.get(url, timeout=timeout, proxy=proxy, proxy_auth=proxy_auth, headers=useragent(referer, user_headers)) as response:
             response = json.loads(await response.read())
             return response
     except:
@@ -31,9 +34,11 @@ async def run(urls):
 
 
 def get_htmls(urls):
+    global user_headers
+    user_headers = Token().get_token()
     urls = urls if isinstance(urls, list) else [urls]
     result = []
-    step = 10
+    step = 20
     print(f'ссылок: {len(urls)}')
     while urls:
         step_urls = urls[:step]
@@ -45,16 +50,14 @@ def get_htmls(urls):
 
     return result
 
-session_token = document.read_document('text_files/token.txt')
-print(session_token, 'token')
-def useragent(referer):
+
+def useragent(referer, user_headers):
     referer = referer.replace('e-s', 'es')
     return {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+        'User-Agent': f'{user_headers[2]}',
         'accept': 'application/json',
         'accept-language': 'en-US;q=0.8,en;q=0.7',
         'content-type': 'application/json', 'origin': 'https://www.pinnacle.com', 'referer': f'{referer}',
         'sec-fetch-dest': 'empty', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-site',
-        'x-api-key': 'CmX2KcMrXuFmNg6YFbmTxE0y9CIrOi0R',
-        'x-device-uuid': 'f908df91-3a2e2367-33f7c582-961e96a5',
-        'x-session': session_token}
+        'x-api-key': f'{user_headers[0]}',
+        'x-device-uuid': f'{user_headers[1]}'}

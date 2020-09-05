@@ -20,7 +20,7 @@ class Parser:
 
     @staticmethod
     def get_attrs_names():
-        """парсит ссылки и имена для __getattr__"""
+        """парсит названия спорта для __getattr__"""
         target = GetJsonObject()
         objs = target.sports_list()
         result = []
@@ -31,11 +31,12 @@ class Parser:
 
 class GetMatchups:
     def __init__(self, sport_name, sport_id):
-        self.get_page_info = GetJsonObject()
+        self.get_json_object = GetJsonObject()
         self.sport_id = sport_id
         self.sport_name = sport_name
+        self.leagues_id_list = [(i['id'], i['name']) for i in self.get_json_object.leagues_list(self.sport_id, self.sport_name)]
         self.game_info_list = []
-        self.price_list = []
+        self.price_list = self.game_price()
         self.matchups_list = []
 
     def get(self):
@@ -44,16 +45,15 @@ class GetMatchups:
         self.matchups()
         return self.matchups_list
 
+
     def league_games_info(self):
         """объекты цен/матчей всех игр лиги"""
-        leagues_id_list = [(i['id'], i['name']) for i in self.get_page_info.leagues_list(self.sport_id, self.sport_name)]
         result = []
-        for i in self.get_page_info.matchup_list(leagues_id_list, self.sport_name):
+        for i in self.get_json_object.matchup_list(self.leagues_id_list, self.sport_name):
             if i['hasMarkets'] and i['type'] == 'matchup' and not i['parent'] and i['type'] == 'matchup':
                 result.append(i)
         print(len(result))
         self.game_info_list = result
-        self.price_list = self.game_price()
 
     def game_price(self):
         urls = []
@@ -79,13 +79,15 @@ class GetMatchups:
                             break
         self.matchups_list = matchups_list
 
+
 class GetJsonObject:
     """возвращает объекты api arcadia"""
     def sports_list(self):
         return get_htmls(('https://guest.api.arcadia.pinnacle.com/0.1/sports', 'https://www.pinnacle.com/ru/sports/'))
 
     def leagues_list(self, sport_id, sport_name):
-        return get_htmls((f'https://guest.api.arcadia.pinnacle.com/0.1/sports/{sport_id}/leagues?all=false', f'https://www.pinnacle.com/ru/{sport_name.replace("_", "-")}/leagues'))
+        return get_htmls((f'https://guest.api.arcadia.pinnacle.com/0.1/sports/{sport_id}/leagues?all=false',
+                          f'https://www.pinnacle.com/ru/{sport_name.replace("_", "-")}/leagues'))
 
     def matchup_list(self, leagues_id_list, sport_name):
         urls = []
