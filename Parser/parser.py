@@ -30,7 +30,7 @@ def leagues_list_obj(sport_name: str, sport_id: int):
 
 
 def matchup_url_obj(league_object: dict):
-    """ссылки на запросы api всех игр в рамках лиги"""
+    """генерирует ссылки api на запросы объектов price/info всех игр"""
     league_object = league_object if isinstance(league_object, dict) else {}
     if not all([i in league_object for i in ['sport', 'id', 'name']]):
         return {}
@@ -50,6 +50,7 @@ def matchup_url_obj(league_object: dict):
 
 
 def get_async_matchup_objs(objects: list, type: str) -> list:
+    """делает асинхронные запросы к апи"""
     objects = objects if isinstance(objects, list) else []
     if type != 'url_price' and type != 'url_info':
         return []
@@ -108,10 +109,10 @@ def main():
     sport_name = 'hockey'
     sport_id = sports_dict[sport_name]
     leagues_objects = leagues_list_obj(sport_name, sport_id)  # объекты всех лиг
-    list_of_urls_objects = list(map(matchup_url_obj, leagues_objects))  # все ссылки на игры во всех лигах
+    list_of_urls_objects = list(map(matchup_url_obj, leagues_objects))  # список объектов всех ссылок на игры во всех лигах
     price_objects = get_async_matchup_objs(list_of_urls_objects, 'url_price')   # объекты цен всех игр
     info_objects = get_async_matchup_objs(list_of_urls_objects, 'url_info')  # объекты информации о матче всех игр
-    price_objects = [i for i in price_objects if is_money_line(i)]  # оставляет только денежную линию
+    price_objects = [i for i in price_objects if is_money_line(i)]  # фильтр по денежной линии
     info_objects = [i for i in info_objects if is_match(i)]  # фильтр актуальных матчей без лайва
-    full_obj = splice_objs(price_objects, info_objects)
+    full_obj = splice_objs(price_objects, info_objects)  # список объединеных объектов price/info всех игр
     print('матчей с денежной линией найдено: ', len(full_obj), full_obj)
