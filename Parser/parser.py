@@ -33,7 +33,7 @@ def matchup_url_obj(league_object: dict):
     """ссылки на запросы api всех игр в рамках лиги"""
     league_object = league_object if isinstance(league_object, dict) else {}
     if not all([i in league_object for i in ['sport', 'id', 'name']]):
-        return []
+        return {}
 
     sport_name = league_object['sport']['name']
     league_id = league_object['id']
@@ -41,46 +41,62 @@ def matchup_url_obj(league_object: dict):
     return {
         'url_info': f'https://guest.api.arcadia.pinnacle.com/0.1/leagues/{league_id}/matchups',
         'url_price': f'https://guest.api.arcadia.pinnacle.com/0.1/leagues/{league_id}/markets/straight',
-        'referer': f'https://www.pinnacle.com/ru/{replace_space(sport_name)}/'f'{replace_space(league_name)}/matchups'
+        'referer': f'https://www.pinnacle.com/ru/{format_to_url(sport_name)}/'f'{format_to_url(league_name)}/matchups'
     }
-
-    # info_url - ссылка запроса объекта с информацией о матче,
-    # price_url - ссылка запроса объекта с прайсом матча
-    # referer - страница с которой в браузере происходит запрос к апи}
-
+        # url_info - ссылка запроса объекта с информацией о матче,
+        # url_price - ссылка запроса объекта с прайсом матча
+        # referer - страница с которой в браузере происходит запрос к апи}
 
 
-def get_async_matchup_objs(objects: list, type):
+
+def get_async_matchup_objs(objects: list, type: str) -> list:
     objects = objects if isinstance(objects, list) else []
-    if type not in 'url_price' + 'url_info':
+    if type != 'url_price' and type != 'url_info':
         return []
-    info_urls = [(obj[type], obj['referer']) for obj in objects]
-    return get_htmls(info_urls)
 
-def replace_space(string: str):
+    urls = []
+    for obj in objects:
+        if all([i in obj for i in [type, 'referer']]):
+            urls.append((obj[type], obj['referer']))
+    return get_htmls(urls)
+
+def format_to_url(string: str) -> str:
     """подгоняет текст под ссылку"""
-    while '--' in string or ' ' in string:
+    while '--' in string or ' ' in string or '(' in string:
         string = string.replace(' ', '-').replace('--', '-').lower()
+        string = string.replace('(', '').replace(')', '')
     return string
 
-def is_money_line(obj: dict):
+def is_money_line(obj: dict) -> bool:
     """проверка что объект является денежной линией"""
+    obj = obj if isinstance(obj, dict) else {}
+    if not all([i in obj for i in ['key', 'isAlternate', 'type']]):
+        return False
+
     if obj['key'] == 's;0;m' and 'isAlternate' in obj:
         if obj['type'] == 'moneyline':
             return True
 
-def is_match(obj: dict):
+def is_match(obj: dict) -> bool:
     """проверка что это объект матча"""
+    obj = obj if isinstance(obj, dict) else {}
+    if not all([i in obj for i in ['id', 'participants', 'isLive']]):
+        return False
+
     if obj['id'] and ')' not in obj['participants'][0]['name'] and 'Set ' not in obj['participants'][0]['name']\
             and not obj['isLive']:
         return True
 
 
-def splice_objs(price_objects, info_objects):
+def splice_objs(price_objects: list, info_objects: list) -> list:
     """соединяет объекты info и прайс"""
+    price_objects = price_objects if isinstance(price_objects, list) else []
+    info_objects = info_objects if isinstance(info_objects, list) else []
     matchups_list = []
     for price_obj in price_objects:
             for info_obj in info_objects:
+                if 'id' not in info_obj or 'matchupId' not in price_obj:
+                    continue
                 if info_obj['id'] == price_obj['matchupId']:
                     price_obj.update(info_obj)
                     matchups_list.append(price_obj)
@@ -89,14 +105,13 @@ def splice_objs(price_objects, info_objects):
 
 
 def main():
-    sport_name = 'aussie-rules'
+    sport_name = 'hockey'
     sport_id = sports_dict[sport_name]
-    leagues_objects = leagues_list_obj(sport_name, sport_id)
-    print('всего лиг найдено:', len(leagues_objects), leagues_objects)
-    list_of_urls_objects = list(map(matchup_url_obj, leagues_objects))
-    price_objects = get_async_matchup_objs(list_of_urls_objects, 'url_price')
-    price_objects = [i for i in price_objects if is_money_line(i)]
-    info_objects = get_async_matchup_objs(list_of_urls_objects, 'url_info')
-    info_objects = [i for i in info_objects if is_match(i)]
+    leagues_objects = leagues_list_obj(sport_name, sport_id)  # объекты всех лиг
+    list_of_urls_objects = list(map(matchup_url_obj, leagues_objects))  # все ссылки на игры во всех лигах
+    price_objects = get_async_matchup_objs(list_of_urls_objects, 'url_price')   # объекты цен всех игр
+    info_objects = get_async_matchup_objs(list_of_urls_objects, 'url_info')  # объекты информации о матче всех игр
+    price_objects = [i for i in price_objects if is_money_line(i)]  # оставляет только денежную линию
+    info_objects = [i for i in info_objects if is_match(i)]  # фильтр актуальных матчей без лайва
     full_obj = splice_objs(price_objects, info_objects)
-    print('результат', len(full_obj), full_obj)
+    print('матчей с денежной линией найдено: ', len(full_obj), full_obj)
