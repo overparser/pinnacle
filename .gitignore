@@ -112,3 +112,6 @@ get_html/__pycache__/async_get_html.cpython-37.pyc
 document/__pycache__/document.cpython-37.pyc
 get_html/__pycache__/async_get_html.cpython-37.pyc
 Parser/__pycache__/Parser.cpython-37.pyc
+Parser/__pycache__/Parser.cpython-37.pyc
+*.pyc
+.flake8

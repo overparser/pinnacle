@@ -1,4 +1,4 @@
-from Parser.Parser import Parser
+from Parser.parser import Parser
 import time
 from Parser.json_writer import jsonDB
 from Parser.draw import draw

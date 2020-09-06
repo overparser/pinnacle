@@ -1,9 +1,17 @@
 from document.document import read_csv, write_csv_lines
+import os.path
 import time
+
 
 class Token:
     def __init__(self):
-        self.user_headers_list = read_csv('text_files/token.csv')
+        self.path = 'text_files/token.csv'
+        self.check_path()
+        self.user_headers_list = read_csv(self.path)
+
+    def check_path(self):
+        if not os.path.exists(self.path):
+            self.path = '../' + self.path
 
     def get_token(self):
         self.get_older_token()
@@ -23,4 +31,4 @@ class Token:
 
 
     def update_token_csv(self):
-        write_csv_lines('text_files/token.csv', self.user_headers_list, 'w')
+        write_csv_lines(self.path, self.user_headers_list, 'w')

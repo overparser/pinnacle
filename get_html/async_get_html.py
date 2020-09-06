@@ -8,13 +8,17 @@ from document import document
 from Session.Token import Token
 
 
-
 async def fetch(url, referer, session):
     proxy_auth = BasicAuth('tuthixen-dest', '53d8tl329rrx')
     proxy = f"http://{user_headers[-2]}"
     try:
         timeout = ClientTimeout(total=30, connect=15, sock_connect=15, sock_read=15)
-        async with session.get(url, timeout=timeout, proxy=proxy, proxy_auth=proxy_auth, headers=useragent(referer, user_headers)) as response:
+        async with session.get(
+                url,
+                timeout=timeout,
+                proxy=proxy,
+                proxy_auth=proxy_auth,
+                headers=useragent(referer, user_headers)) as response:
             response = json.loads(await response.read())
             return response
     except:
@@ -48,7 +52,7 @@ def get_htmls(urls):
         urls = urls[step:]
         time.sleep(1)
 
-    return result
+    return result if result else []
 
 
 def useragent(referer, user_headers):

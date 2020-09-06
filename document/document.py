@@ -48,6 +48,8 @@ def get_proxy():
     proxies.append(proxy)
     write_lines('text_files/proxies.txt', proxies, 'w')
     return proxy
+
+
 def write_lines(path, strings, mod='a'):
     strings = strings if type(strings) == list else [strings]
 
