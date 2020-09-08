@@ -20,13 +20,13 @@ sports_dict = {
 #                       'https://www.pinnacle.com/ru/sports/'))
 
 
-def leagues_list_obj(sport_name: str, sport_id: int):
-    """список объектов всех лиг в рамках sport_name"""
+def leagues_url(sport_name: str, sport_id: int) -> tuple:
+    """возвращает кортеж ссылок api (url, referer) на объекты лиги"""
     referer = f'https://www.pinnacle.com/ru/{sport_name}/leagues'
     # referer - страница с которой в браузере происходит запрос к апи
     url = f'https://guest.api.arcadia.pinnacle.com/0.1/sports/{sport_id}/leagues?all=false'
     # url - запрос к апи
-    return get_htmls([(url, referer)])
+    return url, referer
 
 
 def matchup_urls(league_object: dict, type_: str) -> tuple:
@@ -98,11 +98,12 @@ def splice_price_info(price_objects: list, info_objects: list) -> list:
 def main():
     sport_name = 'hockey'
     sport_id = sports_dict[sport_name]
-    leagues_objects = leagues_list_obj(sport_name, sport_id)  # объекты всех лиг
+    leagues_url_tuple = leagues_url(sport_name, sport_id)  # ссылки на объекты лиг
+    leagues_objects = get_htmls([leagues_url_tuple])  # получет объекты всех лиг
     urls_price_list = [matchup_urls(i, 'price') for i in leagues_objects]  # список кортежей (url_price, referer)
     urls_info_list = [matchup_urls(i, 'info') for i in leagues_objects]  # список кортежей (url_info, referer)
-    price_objects = get_htmls(urls_price_list)  # список объектов цен всех игр
-    info_objects = get_htmls(urls_info_list)  # список объектов информации о матче всех игр
+    price_objects = get_htmls(urls_price_list)  # получает список объектов цен всех игр
+    info_objects = get_htmls(urls_info_list)  # получает список объектов информации о матче всех игр
     price_objects = [i for i in price_objects if is_money_line(i)]  # фильтр объектов price по денежной линии
     info_objects = [i for i in info_objects if is_match(i)]  # фильтр объектов info по актуальным матчам без лайва
     full_obj = splice_price_info(price_objects, info_objects)  # список объединеных объектов price и info всех игр

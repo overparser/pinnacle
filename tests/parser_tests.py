@@ -9,33 +9,37 @@ sys.path.append(os.getcwd())
 class TestLeagueList(unittest.TestCase):
     sport_name = 'hockey'
     sport_id = sports_dict[sport_name]
-    leagues_objects = leagues_list_obj(sport_name, sport_id)
-    urls_price_list = [matchup_urls(i, 'price') for i in leagues_objects]  # кортежи (url_price, referer)
-    urls_info_list = [matchup_urls(i, 'info') for i in leagues_objects]  # кортежи (url_info, referer)
-    price_objects = get_htmls(urls_price_list)  # спислк объектов цен всех игр
+    leagues_url_tuple = leagues_url(sport_name, sport_id)  # ссылка на объекты лиг
+    leagues_objects = get_htmls([leagues_url_tuple])  # получет объекты всех лиг
+    urls_price_list = [matchup_urls(i, 'price') for i in leagues_objects]  # список кортежей (url_price, referer)
+    urls_info_list = [matchup_urls(i, 'info') for i in leagues_objects]  # список кортежей (url_info, referer)
+    price_objects = get_htmls(urls_price_list)  # список объектов цен всех игр
     info_objects = get_htmls(urls_info_list)  # список объектов информации о матче всех игр
-    price_objects = [i for i in price_objects if is_money_line(i)]  # фильтр по денежной линии
-    info_objects = [i for i in info_objects if is_match(i)]  # фильтр актуальных матчей без лайва
+    price_objects = [i for i in price_objects if is_money_line(i)]  # фильтр объектов price по денежной линии
+    info_objects = [i for i in info_objects if is_match(i)]  # фильтр объектов info по актуальным матчам без лайва
+    full_obj = splice_price_info(price_objects, info_objects)  # список объединеных объектов price и info всех игр
 
-    def test_league_list(self):
-        self.assertNotEqual(leagues_list_obj('tennis', 33), ['detail', 'status', 'title', 'type'])
-        self.assertNotEqual(leagues_list_obj('esports', 12), ['detail', 'status', 'title', 'type'])
-        self.assertNotEqual(leagues_list_obj('hockey', 19), ['detail', 'status', 'title', 'type'])
-        self.assertIsInstance(leagues_list_obj('tennis', 23), list)
-        self.assertIsInstance(leagues_list_obj('tennisww', 23), list)
-        self.assertIsInstance(leagues_list_obj(False, 23), list)
-        self.assertIsInstance(leagues_list_obj(123, 23), list)
-        self.assertIsInstance(leagues_list_obj(list, 23), list)
-        self.assertIsInstance(leagues_list_obj(None, 23), list)
+    def test_leagues_url(self):
+        self.assertIsInstance(leagues_url('tennis', 23), tuple)
+        self.assertIsInstance(leagues_url('tennisww', 23), tuple)
+        self.assertIsInstance(leagues_url(False, 23), tuple)
+        self.assertIsInstance(leagues_url(123, 23), tuple)
+        self.assertIsInstance(leagues_url(list, 23), tuple)
+        self.assertIsInstance(leagues_url(None, 23), tuple)
 
 
-    def test_url_objs(self):
-        self.assertIsInstance(matchup_urls(self.leagues_objects[0], 'price'), tuple)
-        self.assertIsInstance(matchup_urls(self.leagues_objects[1], 'info'), tuple)
-        self.assertIsInstance(matchup_urls({}, 'price'), tuple)
-        self.assertIsInstance(matchup_urls(135, 'info'), tuple)
-        self.assertIsInstance(matchup_urls('', 'price'), tuple)
+    def test_matchup_urls(self):
         self.assertIsInstance(matchup_urls(None, ''), tuple)
+        self.assertIsInstance(matchup_urls(self.leagues_objects[0], 'info'), tuple)
+        self.assertIsInstance(matchup_urls(self.leagues_objects[1], 'info'), tuple)
+        self.assertIsInstance(matchup_urls({}, 'info'), tuple)
+        self.assertIsInstance(matchup_urls(135, 'info'), tuple)
+        self.assertIsInstance(matchup_urls('', 'info'), tuple)
+        self.assertIsInstance(matchup_urls(self.leagues_objects[0], 'price'), tuple)
+        self.assertIsInstance(matchup_urls(self.leagues_objects[1], 'price'), tuple)
+        self.assertIsInstance(matchup_urls({}, 'price'), tuple)
+        self.assertIsInstance(matchup_urls(135, 'price'), tuple)
+        self.assertIsInstance(matchup_urls('', 'price'), tuple)
 
     def test_is_money_line(self):
         self.assertTrue(is_money_line({'key': 's;0;m', 'isAlternate': True, 'type': 'moneyline'}))
