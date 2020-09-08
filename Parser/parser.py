@@ -107,5 +107,3 @@ def main():
     info_objects = [i for i in info_objects if is_match(i)]  # фильтр объектов info по актуальным матчам без лайва
     full_obj = splice_price_info(price_objects, info_objects)  # список объединеных объектов price и info всех игр
     print('матчей с денежной линией найдено: ', len(full_obj), full_obj)
-
-main()
