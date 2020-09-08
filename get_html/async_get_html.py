@@ -8,7 +8,7 @@ from document import document
 from Session.Token import Token
 
 
-async def fetch(url, referer, session):
+async def fetch(url, referer, session, user_headers):
     proxy_auth = BasicAuth('tuthixen-dest', '53d8tl329rrx')
     proxy = f"http://{user_headers[-2]}"
     try:
@@ -24,35 +24,25 @@ async def fetch(url, referer, session):
     except:
         return []
 
-
-async def run(urls):
-    tasks = []
+async def bound_fetch(url, referer, sem, user_headers):
     async with ClientSession() as session:
-        for url, referer in urls:
-            task = asyncio.ensure_future(fetch(url, referer, session))
-            tasks.append(task)
+        async with sem:
+            return await fetch(url, referer, session, user_headers)
 
-        responses = asyncio.gather(*tasks)
-        return await responses
-
-
-
-def get_htmls(urls):
-    global user_headers
+def get_htmls(urls: list) -> list:
+    """принимает список кортежей (url, referer) на вход и делает асинхронные запросы"""
     user_headers = Token().get_token()
     urls = urls if isinstance(urls, list) else [urls]
-    result = []
-    step = 20
+    sem = asyncio.Semaphore(5)
     print(f'ссылок: {len(urls)}')
-    while urls:
-        step_urls = urls[:step]
-        loop = asyncio.get_event_loop()
-        future = asyncio.ensure_future(run(step_urls))
-        _ = [result.extend(i) for i in loop.run_until_complete(future) if i]
-        urls = urls[step:]
-        time.sleep(1)
-
-    return result if result else []
+    loop = asyncio.get_event_loop()
+    futures = []
+    response_list = []
+    for url, referer in urls:
+        futures.append(asyncio.ensure_future(bound_fetch(url, referer, sem, user_headers)))
+    for elem in map(loop.run_until_complete, futures):
+        response_list.extend(elem)
+    return response_list
 
 
 def useragent(referer, user_headers):

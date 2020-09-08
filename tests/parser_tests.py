@@ -58,11 +58,11 @@ class TestLeagueList(unittest.TestCase):
         self.assertFalse(is_match(None))
 
     def test_full_obj(self):
-        self.assertIsInstance(splice_objs(self.price_objects, self.info_objects), list)
-        self.assertIsInstance(splice_objs(self.price_objects[0], self.info_objects), list)
-        self.assertIsInstance(splice_objs(self.price_objects, self.info_objects[0]), list)
-        self.assertIsInstance(splice_objs(self.price_objects, None), list)
-        self.assertIsInstance(splice_objs(None, self.info_objects), list)
+        self.assertIsInstance(splice_price_info(self.price_objects, self.info_objects), list)
+        self.assertIsInstance(splice_price_info(self.price_objects[0], self.info_objects), list)
+        self.assertIsInstance(splice_price_info(self.price_objects, self.info_objects[0]), list)
+        self.assertIsInstance(splice_price_info(self.price_objects, None), list)
+        self.assertIsInstance(splice_price_info(None, self.info_objects), list)
 
 if __name__ == '__main__':
     unittest.main()

@@ -26,7 +26,7 @@ def leagues_list_obj(sport_name: str, sport_id: int):
     # referer - страница с которой в браузере происходит запрос к апи
     url = f'https://guest.api.arcadia.pinnacle.com/0.1/sports/{sport_id}/leagues?all=false'
     # url - запрос к апи
-    return get_htmls((url, referer))
+    return get_htmls([(url, referer)])
 
 
 def matchup_urls(league_object: dict, type_: str) -> tuple:
@@ -79,7 +79,7 @@ def is_match(obj: dict) -> bool:
         return True
 
 
-def splice_objs(price_objects: list, info_objects: list) -> list:
+def splice_price_info(price_objects: list, info_objects: list) -> list:
     """соединяет объекты price_obj и info_obj"""
     price_objects = price_objects if isinstance(price_objects, list) else []
     info_objects = info_objects if isinstance(info_objects, list) else []
@@ -101,9 +101,11 @@ def main():
     leagues_objects = leagues_list_obj(sport_name, sport_id)  # объекты всех лиг
     urls_price_list = [matchup_urls(i, 'price') for i in leagues_objects]  # список кортежей (url_price, referer)
     urls_info_list = [matchup_urls(i, 'info') for i in leagues_objects]  # список кортежей (url_info, referer)
-    price_objects = get_htmls(urls_price_list)   # спислк объектов цен всех игр
+    price_objects = get_htmls(urls_price_list)  # список объектов цен всех игр
     info_objects = get_htmls(urls_info_list)  # список объектов информации о матче всех игр
     price_objects = [i for i in price_objects if is_money_line(i)]  # фильтр по денежной линии
     info_objects = [i for i in info_objects if is_match(i)]  # фильтр актуальных матчей без лайва
-    full_obj = splice_objs(price_objects, info_objects)  # список объединеных объектов price/info всех игр
+    full_obj = splice_price_info(price_objects, info_objects)  # список объединеных объектов price и info всех игр
     print('матчей с денежной линией найдено: ', len(full_obj), full_obj)
+
+main()
