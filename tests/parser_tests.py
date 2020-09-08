@@ -10,10 +10,11 @@ class TestLeagueList(unittest.TestCase):
     sport_name = 'hockey'
     sport_id = sports_dict[sport_name]
     leagues_objects = leagues_list_obj(sport_name, sport_id)
-    list_of_urls_objects = list(map(matchup_url_obj, leagues_objects))
-    price_objects = get_async_matchup_objs(list_of_urls_objects, 'url_price')
-    info_objects = get_async_matchup_objs(list_of_urls_objects, 'url_info')
-    price_objects = [i for i in price_objects if is_money_line(i)]  # оставляет только денежную линию
+    urls_price_list = [matchup_urls(i, 'price') for i in leagues_objects]  # кортежи (url_price, referer)
+    urls_info_list = [matchup_urls(i, 'info') for i in leagues_objects]  # кортежи (url_info, referer)
+    price_objects = get_htmls(urls_price_list)  # спислк объектов цен всех игр
+    info_objects = get_htmls(urls_info_list)  # список объектов информации о матче всех игр
+    price_objects = [i for i in price_objects if is_money_line(i)]  # фильтр по денежной линии
     info_objects = [i for i in info_objects if is_match(i)]  # фильтр актуальных матчей без лайва
 
     def test_league_list(self):
@@ -29,24 +30,12 @@ class TestLeagueList(unittest.TestCase):
 
 
     def test_url_objs(self):
-        self.assertIsInstance(matchup_url_obj(self.leagues_objects[0]), dict)
-        self.assertIsInstance(matchup_url_obj(self.leagues_objects[1]), dict)
-        self.assertIsInstance(matchup_url_obj({}), dict)
-        self.assertIsInstance(matchup_url_obj(135), dict)
-        self.assertIsInstance(matchup_url_obj(''), dict)
-        self.assertIsInstance(matchup_url_obj(None), dict)
-
-
-    def test_get_async_matchup_objs(self):
-        self.assertIsInstance(get_async_matchup_objs(self.list_of_urls_objects, 'url_price'), list)
-        self.assertIsInstance(get_async_matchup_objs(self.list_of_urls_objects, 'info'), list)
-        self.assertIsInstance(get_async_matchup_objs(self.list_of_urls_objects[0], 'url_price'), list)
-        self.assertIsInstance(get_async_matchup_objs(self.list_of_urls_objects[0], 'info'), list)
-        self.assertIsInstance(get_async_matchup_objs([], 'url_price'), list)
-        self.assertIsInstance(get_async_matchup_objs([], 'info'), list)
-        self.assertIsInstance(get_async_matchup_objs(False, 'info'), list)
-        self.assertIsInstance(get_async_matchup_objs(self.list_of_urls_objects, False), list)
-        self.assertIsInstance(get_async_matchup_objs(144, 144), list)
+        self.assertIsInstance(matchup_urls(self.leagues_objects[0], 'price'), tuple)
+        self.assertIsInstance(matchup_urls(self.leagues_objects[1], 'info'), tuple)
+        self.assertIsInstance(matchup_urls({}, 'price'), tuple)
+        self.assertIsInstance(matchup_urls(135, 'info'), tuple)
+        self.assertIsInstance(matchup_urls('', 'price'), tuple)
+        self.assertIsInstance(matchup_urls(None, ''), tuple)
 
     def test_is_money_line(self):
         self.assertTrue(is_money_line({'key': 's;0;m', 'isAlternate': True, 'type': 'moneyline'}))
