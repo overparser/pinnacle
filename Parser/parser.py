@@ -51,12 +51,14 @@ def matchup_urls(league_object: dict, type_: str) -> tuple:
         # url_price - ссылка запроса объекта с прайсом матча
         return url_price, referer
 
+
 def format_to_url(string: str) -> str:
     """подгоняет текст под ссылку"""
     while '--' in string or ' ' in string or '(' in string:
         string = string.replace(' ', '-').replace('--', '-').lower()
         string = string.replace('(', '').replace(')', '')
     return string
+
 
 def is_money_line(obj: dict) -> bool:
     """проверка что объект info является денежной линией"""
@@ -85,13 +87,13 @@ def splice_price_info(price_objects: list, info_objects: list) -> list:
     info_objects = info_objects if isinstance(info_objects, list) else []
     matchups_list = []
     for price_obj in price_objects:
-            for info_obj in info_objects:
-                if 'id' not in info_obj or 'matchupId' not in price_obj:
-                    continue
-                if info_obj['id'] == price_obj['matchupId']:
-                    price_obj.update(info_obj)
-                    matchups_list.append(price_obj)
-                    break
+        for info_obj in info_objects:
+            if 'id' not in info_obj or 'matchupId' not in price_obj:
+                continue
+            if info_obj['id'] == price_obj['matchupId']:
+                price_obj.update(info_obj)
+                matchups_list.append(price_obj)
+                break
     return matchups_list
 
 
