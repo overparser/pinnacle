@@ -29,11 +29,11 @@ async def bound_fetch(url, referer, sem, user_headers):
         async with sem:
             return await fetch(url, referer, session, user_headers)
 
-def get_htmls(urls: list) -> list:
-    """принимает список кортежей (url, referer) на вход и делает асинхронные запросы"""
+def get_objects_from_list_of_tuples(urls: list) -> list:
+    """takes list of tuples (url, referer) and does async requests :returns list of objects"""
     user_headers = Token().get_token()
     urls = urls if isinstance(urls, list) else [urls]
-    sem = asyncio.Semaphore(5)
+    sem = asyncio.Semaphore(2)
     print(f'ссылок: {len(urls)}')
     loop = asyncio.get_event_loop()
     futures = []
