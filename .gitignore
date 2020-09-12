@@ -2,7 +2,7 @@
 /venv/
 __pycache__/
 *__pycache__*
-text_files/proxies.txt
+files/proxies.txt
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm
 
