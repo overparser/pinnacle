@@ -8,17 +8,18 @@ sys.path.append(os.getcwd())
 
 
 class TestLeagueList(unittest.TestCase):
-    sport_name = "hockey"
-    sport_id = SPORTS_DICT[sport_name]
-    leagues_url_tuple = leagues_url(sport_name, sport_id)
-    leagues_objects = async_get_objects([leagues_url_tuple])
-    urls_price_list = [matchup_tuple_of_urls(i, "price") for i in leagues_objects]
-    urls_info_list = [matchup_tuple_of_urls(i, "info") for i in leagues_objects]
-    price_objects = async_get_objects(urls_price_list)
-    info_objects = async_get_objects(urls_info_list)
-    price_objects = [i for i in price_objects if is_moneyline(i)]
-    info_objects = [i for i in info_objects if is_matchup(i)]
-    full_obj = join_price_info(price_objects, info_objects)
+    def setUp(self) -> None:
+        sport_name = "hockey"
+        sport_id = SPORTS_DICT[sport_name]
+        leagues_url_tuple = leagues_url(sport_name, sport_id)
+        leagues_objects = async_get_objects([leagues_url_tuple])
+        urls_price_list = [matchup_tuple_of_urls(i, "price") for i in leagues_objects]
+        urls_info_list = [matchup_tuple_of_urls(i, "info") for i in leagues_objects]
+        price_objects = async_get_objects(urls_price_list)
+        info_objects = async_get_objects(urls_info_list)
+        price_objects = [i for i in price_objects if is_moneyline(i)]
+        info_objects = [i for i in info_objects if is_matchup(i)]
+        full_obj = join_price_and_info(price_objects, info_objects)
 
     def test_leagues_url(self):
         self.assertIsInstance(leagues_url("tennis", 23), tuple)
@@ -89,16 +90,16 @@ class TestLeagueList(unittest.TestCase):
 
     def test_full_obj(self):
         self.assertIsInstance(
-            join_price_info(self.price_objects, self.info_objects), list
+            join_price_and_info(self.price_objects, self.info_objects), list
         )
         self.assertIsInstance(
-            join_price_info(self.price_objects[0], self.info_objects), list
+            join_price_and_info(self.price_objects[0], self.info_objects), list
         )
         self.assertIsInstance(
-            join_price_info(self.price_objects, self.info_objects[0]), list
+            join_price_and_info(self.price_objects, self.info_objects[0]), list
         )
-        self.assertIsInstance(join_price_info(self.price_objects, None), list)
-        self.assertIsInstance(join_price_info(None, self.info_objects), list)
+        self.assertIsInstance(join_price_and_info(self.price_objects, None), list)
+        self.assertIsInstance(join_price_and_info(None, self.info_objects), list)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ from aiohttp import ClientSession
 from aiohttp import ClientTimeout
 from aiohttp import BasicAuth
 import json
+from typing import Dict, List, Union
 import time
 from document import document
 from Session.Token import Token
@@ -32,8 +33,8 @@ async def bound_fetch(url, referer, sem, user_headers):
             return await fetch(url, referer, session, user_headers)
 
 
-def async_get_objects(urls: list) -> list:
-    """takes list of tuples (url, referer) and does async requests :returns list of objects"""
+def async_get_objects(urls: Union[list, tuple]) -> list:
+    """takes list of tuples (url, referer) and does async requests :returns list of objects"""  # not refactored
     user_headers = Token().get_token()
     urls = urls if isinstance(urls, list) else [urls]
     sem = asyncio.Semaphore(2)
